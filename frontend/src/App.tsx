@@ -23,11 +23,11 @@ import SettingsPage from './pages/SettingsPage';
  import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 // import AdminUsersPage from './pages/AdminUsersPage';
-// import AdminQuestionsPage from './pages/AdminQuestionsPage';
+import AdminQuestionsPage from './pages/AdminQuestionsPage';
 // import AdminTagsPage from './pages/AdminTagsPage';
 // import SearchPage from './pages/SearchPage';
-// import AboutPage from './pages/AboutPage';
-// import HelpPage from './pages/HelpPage';
+import AboutPage from './pages/AboutPage';
+import HelpPage from './pages/HelpPage';
 // import ContactPage from './pages/ContactPage';
 // import PrivacyPage from './pages/PrivacyPage';
 // import TermsPage from './pages/TermsPage';
@@ -59,9 +59,9 @@ function App() {
                 <Route path="users" element={<UsersPage />} />
                 <Route path="users/:id" element={<UserProfilePage />} />
                 {/* <Route path="search" element={<SearchPage />} /> */}
-                {/* <Route path="about" element={<AboutPage />} />
+                <Route path="about" element={<AboutPage />} />
                 <Route path="help" element={<HelpPage />} />
-                <Route path="contact" element={<ContactPage />} />
+                {/* <Route path="contact" element={<ContactPage />} />
                 <Route path="privacy" element={<PrivacyPage />} />
                 <Route path="terms" element={<TermsPage />} /> */}
                 
