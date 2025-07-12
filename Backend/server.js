@@ -18,52 +18,70 @@ import { errorHandler } from './middleware/errorHandler.js';
 dotenv.config();
 
 const app = express();
+
+// ✅ Define allowed origins before using them
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://stackit-odoo.netlify.app'
+];
+
+// ✅ Create HTTP server
 const server = createServer(app);
+
+// ✅ Initialize Socket.IO with CORS support
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     methods: ["GET", "POST"]
   }
 });
 
-// Connect to MongoDB
+// ✅ Connect to MongoDB
 connectDB();
 
-// Security middleware
+// ✅ Security middleware
 app.use(helmet());
+
+// ✅ CORS middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
-// Rate limiting
+// ✅ Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100 // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
 
-// Body parsing middleware
+// ✅ Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Socket.io for real-time notifications
+// ✅ Socket.io event handling
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
-  
+
   socket.on('join-user', (userId) => {
     socket.join(`user_${userId}`);
   });
-  
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
 
-// Make io accessible to routes
+// ✅ Make io accessible in routes
 app.set('socketio', io);
 
-// Routes
+// ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/answers', answerRoutes);
@@ -72,14 +90,15 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check
+// ✅ Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'StackIt Backend is running!' });
 });
 
-// Error handling middleware
+// ✅ Error handling middleware
 app.use(errorHandler);
 
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {

@@ -20,8 +20,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import SettingsPage from './pages/SettingsPage';
-// import NotificationsPage from './pages/NotificationsPage';
-// import AdminDashboardPage from './pages/AdminDashboardPage';
+ import NotificationsPage from './pages/NotificationsPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 // import AdminUsersPage from './pages/AdminUsersPage';
 // import AdminQuestionsPage from './pages/AdminQuestionsPage';
 // import AdminTagsPage from './pages/AdminTagsPage';
@@ -48,10 +48,10 @@ function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
                 <Route path="questions" element={<QuestionsPage />} />
-                {/* <Route path="questions/:id" element={<QuestionDetailPage />} /> */}
+                 <Route path="questions/:id" element={<QuestionDetailPage />} />
                 <Route path="ask" element={
                   <ProtectedRoute>
-                    {/* <AskQuestionPage /> */}
+                     <AskQuestionPage /> 
                   </ProtectedRoute>
                 } />
                 <Route path="tags" element={<TagsPage />} />
@@ -78,14 +78,14 @@ function App() {
                 } />
                 <Route path="notifications" element={
                   <ProtectedRoute>
-                    {/* <NotificationsPage /> */}
+                     <NotificationsPage /> 
                   </ProtectedRoute>
                 } />
                 
                 {/* Admin Routes */}
                 <Route path="admin" element={
                   <ProtectedRoute roles={['admin', 'moderator']}>
-                    {/* <AdminDashboardPage /> */}
+                    <AdminDashboardPage /> 
                   </ProtectedRoute>
                 } />
                 <Route path="admin/users" element={
