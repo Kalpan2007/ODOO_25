@@ -72,8 +72,6 @@ const guestViewOnly = (req, res, next) => {
   next();
 };
 
-module.exports.guestViewOnly = guestViewOnly;
-
 // Optional auth (for guest access)
 const optionalAuth = async (req, res, next) => {
   try {
@@ -81,11 +79,9 @@ const optionalAuth = async (req, res, next) => {
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
-      
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
-        
         if (user && !user.isBanned) {
           req.user = user;
         }
@@ -93,11 +89,10 @@ const optionalAuth = async (req, res, next) => {
         // Invalid token, but continue as guest
       }
     }
-
     next();
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { protect, authorize, optionalAuth };
+module.exports = { protect, authorize, optionalAuth, guestViewOnly };
