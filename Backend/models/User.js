@@ -1,71 +1,92 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: [true, 'Username is required'],
+    required: true,
     unique: true,
     trim: true,
-    minlength: [3, 'Username must be at least 3 characters'],
-    maxlength: [20, 'Username cannot exceed 20 characters'],
-    match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores']
+    minlength: 3,
+    maxlength: 30
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: true,
     unique: true,
     lowercase: true,
-    trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    trim: true
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false
+    required: true,
+    minlength: 6
   },
-  role: {
+  avatar: {
     type: String,
-    enum: ['user', 'admin', 'guest'],
-    default: 'user'
+    default: ''
+  },
+  bio: {
+    type: String,
+    default: '',
+    maxlength: 500
   },
   reputation: {
     type: Number,
     default: 0
   },
   badges: [{
-    type: String,
-    trim: true
+    name: String,
+    icon: String,
+    color: String,
+    earnedAt: {
+      type: Date,
+      default: Date.now
+    }
   }],
-  isBanned: {
-    type: Boolean,
-    default: false
-  },
-  avatar: {
+  role: {
     type: String,
-    default: ''
+    enum: ['user', 'moderator', 'admin'],
+    default: 'user'
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastSeen: {
+    type: Date,
+    default: Date.now
+  },
+  joinedAt: {
+    type: Date,
+    default: Date.now
+  },
+  location: String,
+  website: String,
+  github: String,
+  linkedin: String,
+  twitter: String,
+  notifications: {
+    email: {
+      type: Boolean,
+      default: true
+    },
+    push: {
+      type: Boolean,
+      default: true
+    }
   }
 }, {
   timestamps: true
 });
 
-// Index for faster queries
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ reputation: -1 });
-
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 // Compare password method
@@ -73,11 +94,24 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Transform output
-userSchema.methods.toJSON = function() {
-  const userObject = this.toObject();
-  delete userObject.password;
-  return userObject;
+// Update reputation and badges
+userSchema.methods.updateReputation = function(points) {
+  this.reputation += points;
+  
+  // Award badges based on reputation
+  const badges = [];
+  if (this.reputation >= 100 && !this.badges.find(b => b.name === 'Bronze Contributor')) {
+    badges.push({ name: 'Bronze Contributor', icon: '🥉', color: '#CD7F32' });
+  }
+  if (this.reputation >= 500 && !this.badges.find(b => b.name === 'Silver Expert')) {
+    badges.push({ name: 'Silver Expert', icon: '🥈', color: '#C0C0C0' });
+  }
+  if (this.reputation >= 1000 && !this.badges.find(b => b.name === 'Gold Master')) {
+    badges.push({ name: 'Gold Master', icon: '🥇', color: '#FFD700' });
+  }
+  
+  this.badges.push(...badges);
+  return this.save();
 };
 
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.model('User', userSchema);

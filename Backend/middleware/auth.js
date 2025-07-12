@@ -1,8 +1,7 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-// Protect routes
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   try {
     let token;
 
@@ -11,88 +10,55 @@ const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized to access this route'
-      });
+      return res.status(401).json({ message: 'Not authorized, no token provided' });
     }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'No user found with this token'
-        });
-      }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
 
-      if (user.isBanned) {
-        return res.status(403).json({
-          success: false,
-          message: 'User account is banned'
-        });
-      }
-
-      req.user = user;
-      next();
-    } catch (error) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized to access this route'
-      });
+    if (!user || !user.isActive) {
+      return res.status(401).json({ message: 'Not authorized, user not found or inactive' });
     }
+
+    req.user = user;
+    next();
   } catch (error) {
-    next(error);
+    console.error('Auth middleware error:', error);
+    return res.status(401).json({ message: 'Not authorized, token failed' });
   }
 };
 
-// Grant access to specific roles
-const authorize = (...roles) => {
+export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: `User role ${req.user.role} is not authorized to access this route`
+      return res.status(403).json({ 
+        message: `User role ${req.user.role} is not authorized to access this route` 
       });
     }
     next();
   };
 };
 
-// Only allow guests to view (GET) endpoints
-const guestViewOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'guest' && req.method !== 'GET') {
-    return res.status(403).json({
-      success: false,
-      message: 'Guest users can only view content.'
-    });
-  }
-  next();
-};
-
-// Optional auth (for guest access)
-const optionalAuth = async (req, res, next) => {
+export const optional = async (req, res, next) => {
   try {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
-      try {
+      
+      if (token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-        if (user && !user.isBanned) {
+        const user = await User.findById(decoded.id).select('-password');
+        
+        if (user && user.isActive) {
           req.user = user;
         }
-      } catch (error) {
-        // Invalid token, but continue as guest
       }
     }
+
     next();
   } catch (error) {
-    next(error);
+    // Continue without authentication
+    next();
   }
 };
-
-module.exports = { protect, authorize, optionalAuth, guestViewOnly };

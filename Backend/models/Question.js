@@ -1,28 +1,47 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Question title is required'],
+    required: true,
     trim: true,
-    minlength: [10, 'Title must be at least 10 characters'],
-    maxlength: [200, 'Title cannot exceed 200 characters']
+    maxlength: 200
   },
-  description: {
+  content: {
     type: String,
-    required: [true, 'Question description is required'],
-    minlength: [20, 'Description must be at least 20 characters']
+    required: true
   },
-  tags: [{
-    type: String,
-    trim: true,
-    lowercase: true,
-    maxlength: [20, 'Tag cannot exceed 20 characters']
-  }],
   author: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  tags: [{
+    type: String,
+    trim: true,
+    lowercase: true
+  }],
+  votes: {
+    up: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    down: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }]
   },
   answers: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -30,36 +49,47 @@ const questionSchema = new mongoose.Schema({
   }],
   acceptedAnswer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Answer',
-    default: null
+    ref: 'Answer'
   },
   views: {
     type: Number,
     default: 0
   },
-  isDeleted: {
+  status: {
+    type: String,
+    enum: ['open', 'closed', 'deleted'],
+    default: 'open'
+  },
+  featured: {
     type: Boolean,
     default: false
+  },
+  bounty: {
+    amount: {
+      type: Number,
+      default: 0
+    },
+    expiresAt: Date
   }
 }, {
   timestamps: true
 });
 
-// Indexes for better performance
-questionSchema.index({ author: 1 });
-questionSchema.index({ tags: 1 });
-questionSchema.index({ createdAt: -1 });
-questionSchema.index({ title: 'text', description: 'text' });
-
-// Virtual for answer count
-questionSchema.virtual('answerCount', {
-  ref: 'Answer',
-  localField: '_id',
-  foreignField: 'question',
-  count: true
+// Virtual for vote score
+questionSchema.virtual('voteScore').get(function() {
+  return this.votes.up.length - this.votes.down.length;
 });
 
-// Ensure virtual fields are serialized
-questionSchema.set('toJSON', { virtuals: true });
+// Virtual for answer count
+questionSchema.virtual('answerCount').get(function() {
+  return this.answers.length;
+});
 
-module.exports = mongoose.model('Question', questionSchema);
+// Indexes for better performance
+questionSchema.index({ title: 'text', content: 'text' });
+questionSchema.index({ tags: 1 });
+questionSchema.index({ createdAt: -1 });
+questionSchema.index({ 'votes.up': 1 });
+questionSchema.index({ views: -1 });
+
+export default mongoose.model('Question', questionSchema);

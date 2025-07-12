@@ -1,46 +1,40 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
+  recipient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  sender: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   type: {
     type: String,
-    required: true,
-    enum: ['answer', 'mention', 'accepted_answer', 'vote']
+    enum: ['answer', 'comment', 'vote', 'accept', 'mention', 'badge', 'system'],
+    required: true
   },
-  content: {
+  title: {
     type: String,
-    required: [true, 'Notification content is required'],
-    maxlength: [500, 'Content cannot exceed 500 characters']
-  },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
     required: true
   },
-  from: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  message: {
+    type: String,
     required: true
   },
-  linkTo: {
-    question: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Question'
-    },
-    answer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Answer'
-    }
-  },
+  link: String,
   isRead: {
     type: Boolean,
     default: false
+  },
+  data: {
+    questionId: mongoose.Schema.Types.ObjectId,
+    answerId: mongoose.Schema.Types.ObjectId,
+    badgeName: String
   }
 }, {
   timestamps: true
 });
 
-// Indexes
-notificationSchema.index({ user: 1, isRead: 1 });
-notificationSchema.index({ createdAt: -1 });
-
-module.exports = mongoose.model('Notification', notificationSchema);
+export default mongoose.model('Notification', notificationSchema);

@@ -1,28 +1,39 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tagSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
     unique: true,
-    trim: true,
     lowercase: true,
-    maxlength: [20, 'Tag name cannot exceed 20 characters']
+    trim: true
   },
   description: {
     type: String,
-    maxlength: [200, 'Tag description cannot exceed 200 characters']
+    maxlength: 500
   },
-  usageCount: {
+  color: {
+    type: String,
+    default: '#6B7280'
+  },
+  questionCount: {
     type: Number,
     default: 0
+  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  moderators: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  featured: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
 });
 
-// Index for faster queries
-tagSchema.index({ name: 1 });
-tagSchema.index({ usageCount: -1 });
-
-module.exports = mongoose.model('Tag', tagSchema);
+export default mongoose.model('Tag', tagSchema);
