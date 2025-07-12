@@ -5,6 +5,18 @@ StackIt is a modern, community-driven Q&A platform built using the **MERN Stack*
 > 💡 Designed and built in under 24 hours during the Odoo Hackathon 2025 🚀
 
 ---
+## 🔗 Live Links
+
+| Platform        | Live Link                                                                 |
+|-----------------|---------------------------------------------------------------------------|
+| 🌐 Frontend     | [Visit StackIt Frontend](https://stackit-odoo.netlify.app/)           |
+| 🛠️ Backend API  | [Visit Backend Live Server](https://stackit-backend-0vzt.onrender.com) |
+| 🎨 Figma Design | [View UI Prototype](https://www.figma.com/design/YKYLqPwlaGQUoMtKWWCjoZ/ODOO_2025?node-id=0-1&t=hA3eKfsJjCwnnFGp-1)           |
+
+> ✅ Backend and frontend are **fully connected** and deployed  
+> ✅ Figma showcases the human-made modern UI used in development
+
+---
 
 ## 📌 Features Overview
 
