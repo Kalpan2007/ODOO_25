@@ -107,7 +107,7 @@ export const useAuth = () => {
 };
 
 // Set up axios defaults
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://odoo-25.onrender.com/api';
 axios.defaults.baseURL = API_URL;
 
 // Add request interceptor to include token
